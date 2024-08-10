@@ -1,4 +1,6 @@
-﻿namespace TreeNodeException.Api.Models;
+﻿using System.Xml;
+
+namespace TreeNodeException.Api.Models;
 
 public class Tree
 {

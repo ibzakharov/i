@@ -1,5 +1,9 @@
 ﻿namespace TreeNodeException.Dtos;
 
-public record NodeDTO(int NodeID, string NodeName, int? ParentNodeID, int TreeID, string OtherAttributes);
-
-public record ModifyNodeDTO(string NodeName, int TreeID);
+public class NodeDTO
+{
+    public int NodeID { get; init; }
+    public string NodeName { get; init; } 
+    public int? ParentNodeID { get; init; }
+    public int TreeID { get; init; }
+}
