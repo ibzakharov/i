@@ -86,7 +86,7 @@ public class NodesController : ControllerBase
             return NotFound();
         }
 
-        await _nodeRepository.DeleteNodeAsync(id);
+        await _nodeRepository.DeleteNodeAsync(node);
         return NoContent();
     }
 }

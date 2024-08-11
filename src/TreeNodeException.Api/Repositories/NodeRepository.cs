@@ -27,22 +27,10 @@ public class NodeRepository : INodeRepository
         if (node == null)
             return null;
 
-        await LoadChildrenAsync(node);
+        await NodeHelper.LoadChildrenAsync(node, _context);
         return node;
     }
 
-    private async Task LoadChildrenAsync(Node node)
-    {
-        if (node.Child != null && node.Child.Count > 0)
-        {
-            foreach (var child in node.Child)
-            {
-                await _context.Entry(child).Collection(c => c.Child).LoadAsync();
-                await LoadChildrenAsync(child); // рекурсивная загрузка
-            }
-        }
-    }
-    
     public async Task AddNodeAsync(Node node)
     {
         _context.Nodes.Add(node);
@@ -55,13 +43,9 @@ public class NodeRepository : INodeRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteNodeAsync(int id)
+    public async Task DeleteNodeAsync(Node node)
     {
-        var node = await GetNodeByIdAsync(id);
-        if (node != null)
-        {
-            _context.Nodes.Remove(node);
-            await _context.SaveChangesAsync();
-        }
+        _context.Nodes.Remove(node);
+        await _context.SaveChangesAsync();
     }
 }

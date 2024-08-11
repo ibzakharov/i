@@ -19,32 +19,26 @@ public class TreeRepository : ITreeRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Node>> GetAllTreeNodesAsync()
+    {
+        var nodes = await _context.Nodes
+            .Where(t => t.ParentId == null)
+            .Include(n => n.Child)
+            .ToListAsync();
+
+        foreach (var node in nodes)
+        {
+            await NodeHelper.LoadChildrenAsync(node, _context);
+        }
+
+        return nodes;
+    }
+
+
     public async Task<Node> GetTreeByIdAsync(int id)
     {
         return await _context.Nodes
-            // .Include(t => t.ParentNode)
+            .Where(t => t.ParentId == null)
             .FirstOrDefaultAsync(t => t.NodeId == id);
-    }
-    
-    public async Task AddTreeAsync(Node node)
-    {
-        _context.Nodes.Add(node);
-        await _context.SaveChangesAsync();
-    }
-    
-    public async Task UpdateTreeAsync(Node node)
-    {
-        _context.Entry(node).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-    }
-    
-    public async Task DeleteTreeAsync(int id)
-    {
-        var tree = await _context.Nodes.FindAsync(id);
-        if (tree != null)
-        {
-            _context.Nodes.Remove(tree);
-            await _context.SaveChangesAsync();
-        }
     }
 }
