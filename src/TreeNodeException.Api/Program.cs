@@ -16,8 +16,9 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql("Host=desktop;Port=8001;Database=testdb;Username=postgres;Password=postgres"));
 
-        builder.Services.AddScoped<ITreeRepository, TreeRepository>();
+        // builder.Services.AddScoped<ITreeRepository, TreeRepository>();
         builder.Services.AddScoped<INodeRepository, NodeRepository>();
+        builder.Services.AddScoped<ITreeRepository, TreeRepository>();
         builder.Services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
 
         builder.Services.AddAutoMapper(typeof(Program));

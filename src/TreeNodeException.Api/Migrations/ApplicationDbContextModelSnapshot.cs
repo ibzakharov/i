@@ -22,6 +22,28 @@ namespace TreeNodeException.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Node", b =>
+                {
+                    b.Property<int>("NodeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NodeId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("NodeId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Nodes");
+                });
+
             modelBuilder.Entity("TreeNodeException.Api.Models.ExceptionLog", b =>
                 {
                     b.Property<int>("EventID")
@@ -58,76 +80,19 @@ namespace TreeNodeException.Api.Migrations
                     b.ToTable("ExceptionLogs");
                 });
 
-            modelBuilder.Entity("TreeNodeException.Api.Models.Node", b =>
+            modelBuilder.Entity("Node", b =>
                 {
-                    b.Property<int>("NodeID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NodeID"));
-
-                    b.Property<string>("NodeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ParentNodeID")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TreeID")
-                        .HasColumnType("integer");
-
-                    b.HasKey("NodeID");
-
-                    b.HasIndex("ParentNodeID");
-
-                    b.HasIndex("TreeID");
-
-                    b.ToTable("Nodes");
-                });
-
-            modelBuilder.Entity("TreeNodeException.Api.Models.Tree", b =>
-                {
-                    b.Property<int>("TreeID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TreeID"));
-
-                    b.Property<string>("TreeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("TreeID");
-
-                    b.ToTable("Trees");
-                });
-
-            modelBuilder.Entity("TreeNodeException.Api.Models.Node", b =>
-                {
-                    b.HasOne("TreeNodeException.Api.Models.Node", "ParentNode")
-                        .WithMany("ChildNodes")
-                        .HasForeignKey("ParentNodeID")
+                    b.HasOne("Node", "Parent")
+                        .WithMany("Child")
+                        .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("TreeNodeException.Api.Models.Tree", "Tree")
-                        .WithMany("Nodes")
-                        .HasForeignKey("TreeID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ParentNode");
-
-                    b.Navigation("Tree");
+                    b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("TreeNodeException.Api.Models.Node", b =>
+            modelBuilder.Entity("Node", b =>
                 {
-                    b.Navigation("ChildNodes");
-                });
-
-            modelBuilder.Entity("TreeNodeException.Api.Models.Tree", b =>
-                {
-                    b.Navigation("Nodes");
+                    b.Navigation("Child");
                 });
 #pragma warning restore 612, 618
         }

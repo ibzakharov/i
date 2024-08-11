@@ -1,82 +1,85 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using TreeNodeException.Api.DTO;
-using TreeNodeException.Api.Models;
+using TreeNodeException.Api.Dtos;
 using TreeNodeException.Api.Repositories;
 
 namespace TreeNodeException.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/tree")]
 [ApiController]
 public class TreeController : ControllerBase
 {
     private readonly ITreeRepository _treeRepository;
+    private readonly INodeRepository _nodeRepository;
     private readonly IMapper _mapper;
 
-    public TreeController(ITreeRepository treeRepository, IMapper mapper)
+    public TreeController(ITreeRepository treeRepository, 
+        INodeRepository nodeRepository,
+        IMapper mapper)
     {
         _treeRepository = treeRepository;
+        _nodeRepository = nodeRepository;
         _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TreeDTO>>> GetTrees()
+    public async Task<ActionResult<IEnumerable<TreeDto>>> GetTrees()
     {
-        var trees = await _treeRepository.GetAllTreesAsync();
-        return Ok(_mapper.Map<IEnumerable<TreeDTO>>(trees));
+        var nodes = await _treeRepository.GetAllTreesAsync();
+        return Ok(_mapper.Map<IEnumerable<TreeDto>>(nodes));
     }
-
+    
     [HttpGet("{id}")]
-    public async Task<ActionResult<TreeDTO>> GetTree(int id)
+    public async Task<ActionResult<TreeDto>> GetTree(int id)
     {
-        var tree = await _treeRepository.GetTreeByIdAsync(id);
-
-        if (tree == null)
+        var node = await _treeRepository.GetTreeByIdAsync(id);
+    
+        if (node == null)
         {
             return NotFound();
         }
-
-        return Ok(_mapper.Map<TreeDTO>(tree));
+    
+        return Ok(_mapper.Map<TreeDto>(node));
     }
-
+    
     [HttpGet("{id}/nodes")]
-    public async Task<ActionResult<TreeNodesDTO>> GetTreeNodes(int id)
+    public async Task<ActionResult<TreeNodesDto>> GetTreeNodes(int id)
     {
-        var tree = await _treeRepository.GetTreeByIdAsync(id);
-
-        if (tree == null)
+        var node = await _nodeRepository.GetNodeWithChildByIdAsync(id);
+    
+        if (node == null)
         {
             return NotFound();
         }
-
-        return Ok(_mapper.Map<TreeNodesDTO>(tree));
+    
+        return Ok(_mapper.Map<TreeNodesDto>(node));
     }
-
+    
     [HttpPost]
-    public async Task<ActionResult<TreeDTO>> PostTree(ModifyTreeDTO treeDto)
+    public async Task<ActionResult<TreeDto>> PostTree(ModifyTreeDto nodeDto)
     {
-        var tree = _mapper.Map<Tree>(treeDto);
-        tree = await _treeRepository.AddTreeAsync(tree);
-
-        return CreatedAtAction(nameof(GetTree), new { id = tree.TreeID }, _mapper.Map<TreeDTO>(tree));
+        var node = _mapper.Map<Node>(nodeDto);
+        await _treeRepository.AddTreeAsync(node);
+    
+        return CreatedAtAction(nameof(GetTree), new { id = node.NodeId }, _mapper.Map<TreeDto>(node));
     }
-
+    
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTree(int id, ModifyTreeDTO modifyTreeDto)
+    public async Task<IActionResult> PutTree(int id, ModifyTreeDto nodeDto)
     {
-        var tree = await _treeRepository.GetTreeByIdAsync(id);
-
-        if (tree == null)
+        var node = await _treeRepository.GetTreeByIdAsync(id);
+    
+        if (node == null)
         {
             return NotFound();
         }
-
-        _mapper.Map(modifyTreeDto, tree);
-        await _treeRepository.UpdateTreeAsync(tree);
-
+    
+        _mapper.Map(nodeDto, node);
+        await _treeRepository.UpdateTreeAsync(node);
+    
         return NoContent();
     }
-
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTree(int id)
     {
@@ -85,9 +88,9 @@ public class TreeController : ControllerBase
         {
             return NotFound();
         }
-
+    
         await _treeRepository.DeleteTreeAsync(id);
-
+    
         return NoContent();
     }
 }

@@ -1,141 +1,92 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TreeNodeException.Api.Models;
+using TreeNodeException.Api.Dtos;
 using TreeNodeException.Api.Repositories;
-using TreeNodeException.Dtos;
 
-namespace TreeNodeException.Api.Controllers;
-
-[Route("api/[controller]")]
+[Route("api/nodes")]
 [ApiController]
 public class NodesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
     private readonly INodeRepository _nodeRepository;
+    private readonly IMapper _mapper;
 
-    public NodesController(ApplicationDbContext context, 
-        IMapper mapper,
-        INodeRepository nodeRepository)
+    public NodesController(INodeRepository nodeRepository, IMapper mapper)
     {
-        _context = context;
-        _mapper = mapper;
         _nodeRepository = nodeRepository;
+        _mapper = mapper;
     }
 
-    // [HttpGet("tree/{treeId}")]
-    // public async Task<ActionResult<IEnumerable<Node>>> GetNodesByTree(int treeId)
+    // [HttpGet]
+    // public async Task<ActionResult<IEnumerable<NodeDto>>> GetNodes()
     // {
-    //     return await _context.Nodes.Where(n => n.TreeID == treeId).ToListAsync();
+    //     var nodes = await _nodeRepository.GetAllNodesAsync();
+    //     var nodesDto = _mapper.Map<IEnumerable<NodeDto>>(nodes);
+    //     return Ok(nodesDto);
     // }
-    //
+
     [HttpGet("{id}")]
-    public async Task<ActionResult<NodeDTO>> GetNode(int id)
+    public async Task<ActionResult<NodeDto>> GetNode(int id)
     {
         var node = await _nodeRepository.GetNodeByIdAsync(id);
         if (node == null)
         {
             return NotFound();
         }
-        var nodeDto = _mapper.Map<NodeDTO>(node);
+
+        var nodeDto = _mapper.Map<NodeDto>(node);
         return Ok(nodeDto);
     }
-    
-    // [HttpPost]
-    // public async Task<ActionResult<Node>> PostNode(Node node)
-    // {
-    //     _context.Nodes.Add(node);
-    //     await _context.SaveChangesAsync();
-    //
-    //     return CreatedAtAction(nameof(GetNode), new { id = node.NodeID }, node);
-    // }   
-    
-    [HttpPost("new-node")]
-    public async Task<ActionResult<NodeDTO>> PostNewNode(Modify nodeDto)
+
+    [HttpGet("{id}/child")]
+    public async Task<ActionResult<NodeChildDto>> GetNodeChild(int id)
     {
-        // Проверить TreeId
-        var find = await _context.Trees.FirstOrDefaultAsync(p => p.TreeID == nodeDto.TreeID);
-        if (find == null)
+        var node = await _nodeRepository.GetNodeWithChildByIdAsync(id);
+        if (node == null)
         {
             return NotFound();
         }
-        
-        var node = _mapper.Map<Node>(nodeDto);
-        _context.Nodes.Add(node);
-        await _context.SaveChangesAsync();
 
-        var createdNodeDto = _mapper.Map<NodeDTO>(node);
-        return CreatedAtAction(nameof(GetNode), new { id = node.NodeID }, createdNodeDto);
-    } 
-    
-    // [HttpPost("new-child-node")]
-    // public async Task<ActionResult<Node>> PostNewNode(int treeId, int parentNodeId)
-    // {
-    //     var find = await _context.Nodes.FirstOrDefaultAsync(p => p.ParentNodeID == parentNodeId && p.TreeID == treeId);
-    //     if (find == null)
-    //     {
-    //         return NotFound();
-    //     }
-    //     
-    //     var node = new Node
-    //     {
-    //         TreeID = treeId,
-    //         ParentNodeID = parentNodeId
-    //     };
-    //
-    //     _context.Nodes.Add(node);
-    //     await _context.SaveChangesAsync();
-    //
-    //     return CreatedAtAction(nameof(GetNode), new { id = node.NodeID }, node);
-    // }
-    //
-    // [HttpPut("{id}")]
-    // public async Task<IActionResult> PutNode(int id, Node node)
-    // {
-    //     if (id != node.NodeID)
-    //     {
-    //         return BadRequest();
-    //     }
-    //
-    //     _context.Entry(node).State = EntityState.Modified;
-    //
-    //     try
-    //     {
-    //         await _context.SaveChangesAsync();
-    //     }
-    //     catch (DbUpdateConcurrencyException)
-    //     {
-    //         if (!NodeExists(id))
-    //         {
-    //             return NotFound();
-    //         }
-    //         else
-    //         {
-    //             throw;
-    //         }
-    //     }
-    //
-    //     return NoContent();
-    // }
-    //
-    // [HttpDelete("{id}")]
-    // public async Task<IActionResult> DeleteNode(int id)
-    // {
-    //     var node = await _context.Nodes.FindAsync(id);
-    //     if (node == null)
-    //     {
-    //         return NotFound();
-    //     }
-    //
-    //     _context.Nodes.Remove(node);
-    //     await _context.SaveChangesAsync();
-    //
-    //     return NoContent();
-    // }
-    //
-    // private bool NodeExists(int id)
-    // {
-    //     return _context.Nodes.Any(e => e.NodeID == id);
-    // }
+        var nodeDto = _mapper.Map<NodeChildDto>(node);
+        return Ok(nodeDto);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<NodeDto>> CreateNode(ModifyNodeDto nodeDto)
+    {
+        var node = _mapper.Map<Node>(nodeDto);
+        await _nodeRepository.AddNodeAsync(node);
+        return CreatedAtAction(nameof(GetNode), new { id = node.NodeId }, _mapper.Map<NodeDto>(node));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateNode(int id, NodeDto nodeDto)
+    {
+        if (id != nodeDto.NodeId)
+        {
+            return BadRequest();
+        }
+
+        var node = await _nodeRepository.GetNodeByIdAsync(id);
+        if (node == null)
+        {
+            return NotFound();
+        }
+
+        _mapper.Map(nodeDto, node);
+        await _nodeRepository.UpdateNodeAsync(node);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteNode(int id)
+    {
+        var node = await _nodeRepository.GetNodeByIdAsync(id);
+        if (node == null)
+        {
+            return NotFound();
+        }
+
+        await _nodeRepository.DeleteNodeAsync(id);
+        return NoContent();
+    }
 }

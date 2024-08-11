@@ -12,36 +12,38 @@ public class TreeRepository : ITreeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Tree>> GetAllTreesAsync()
+    public async Task<IEnumerable<Node>> GetAllTreesAsync()
     {
-        return await _context.Trees.Include(t => t.Nodes).ToListAsync();
+        return await _context.Nodes
+            .Where(t => t.ParentId == null)
+            .ToListAsync();
     }
 
-    public async Task<Tree> GetTreeByIdAsync(int id)
+    public async Task<Node> GetTreeByIdAsync(int id)
     {
-        return await _context.Trees.Include(t => t.Nodes)
-            .FirstOrDefaultAsync(t => t.TreeID == id);
+        return await _context.Nodes
+            // .Include(t => t.ParentNode)
+            .FirstOrDefaultAsync(t => t.NodeId == id);
     }
-
-    public async Task<Tree> AddTreeAsync(Tree tree)
+    
+    public async Task AddTreeAsync(Node node)
     {
-        _context.Trees.Add(tree);
-        await _context.SaveChangesAsync();
-        return tree;
-    }
-
-    public async Task UpdateTreeAsync(Tree tree)
-    {
-        _context.Entry(tree).State = EntityState.Modified;
+        _context.Nodes.Add(node);
         await _context.SaveChangesAsync();
     }
-
+    
+    public async Task UpdateTreeAsync(Node node)
+    {
+        _context.Entry(node).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+    }
+    
     public async Task DeleteTreeAsync(int id)
     {
-        var tree = await _context.Trees.FindAsync(id);
+        var tree = await _context.Nodes.FindAsync(id);
         if (tree != null)
         {
-            _context.Trees.Remove(tree);
+            _context.Nodes.Remove(tree);
             await _context.SaveChangesAsync();
         }
     }

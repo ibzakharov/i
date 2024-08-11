@@ -4,9 +4,9 @@ namespace TreeNodeException.Api.Repositories;
 
 public interface ITreeRepository
 {
-    Task<IEnumerable<Tree>> GetAllTreesAsync();
-    Task<Tree> GetTreeByIdAsync(int id);
-    Task<Tree> AddTreeAsync(Tree tree);
-    Task UpdateTreeAsync(Tree tree);
+    Task<IEnumerable<Node>> GetAllTreesAsync();
+    Task<Node> GetTreeByIdAsync(int id);
+    Task AddTreeAsync(Node tree);
+    Task UpdateTreeAsync(Node tree);
     Task DeleteTreeAsync(int id);
 }
