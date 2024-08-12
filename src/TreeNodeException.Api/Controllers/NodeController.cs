@@ -20,35 +20,25 @@ public class NodeController : ControllerBase
     [HttpPost("create")]
     public async Task<ActionResult<NodeDto>> CreateNode(
         [Required] string treeName,
-        int? parentNodeId,
+        [Required] int parentNodeId,
         [Required] string nodeName)
     {
-        var tree = await _treeRepository.GetTreeByNameAsync(treeName);
+        var parentNode = await _nodeRepository.GetNodeByIdAndNameAsync(parentNodeId, treeName);
 
-        if (tree == null)
+        if (parentNode == null)
         {
-            throw TreeNotFoundException.Throw();
+            throw NodeNotFoundException.Throw(parentNodeId);
         }
 
-        if (parentNodeId != null)
-        {
-            var parentNode = await _nodeRepository.GetNodeByIdAsync(parentNodeId.Value);
-            if (parentNode == null)
-            {
-                throw NodeNotFoundException.Throw();
-            }
-        }
-
-        var node = await _nodeRepository.GetNodeByNameAsync(tree.TreeId, nodeName);
+        var node = await _nodeRepository.GetNodeByParentIdAndNameAsync(parentNodeId, nodeName);
         if (node != null)
         {
-            throw NodeAlreadyExistsException.Throw();
+            throw NodeDuplicateNameException.Throw();
         }
 
         node = new Node
         {
             ParentId = parentNodeId,
-            TreeId = tree.TreeId,
             Name = nodeName
         };
 
@@ -63,46 +53,67 @@ public class NodeController : ControllerBase
         [Required] int nodeId,
         [Required] string newNodeName)
     {
-        var tree = await _treeRepository.GetTreeByNameAsync(treeName);
-
+        var tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
+    
         if (tree == null)
         {
-            throw TreeNotFoundException.Throw();
+            throw TreeNotFoundException.Throw(treeName);
         }
-
-        var node = await _nodeRepository.GetNodeByIdAsync(nodeId);
+    
+        var node = FindNodeByName(tree, nodeId);
+    
         if (node == null)
         {
-            throw NodeNotFoundException.Throw();
+            throw NodeNotFoundException.Throw(nodeId);
         }
-
+    
         node.Name = newNodeName;
-
+    
         await _nodeRepository.UpdateNodeAsync(node);
-
+    
         return Ok();
     }
 
-    [HttpDelete("delete")]
+    [HttpPost("delete")]
     public async Task<IActionResult> DeleteNode(
         [Required] string treeName,
         [Required] int nodeId)
     {
-        var tree = await _treeRepository.GetTreeByNameAsync(treeName);
-
+        var tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
+    
         if (tree == null)
         {
-            throw TreeNotFoundException.Throw();
+            throw TreeNotFoundException.Throw(treeName);
         }
-
-        var node = await _nodeRepository.GetNodeByIdAsync(nodeId);
-        if (node == null)
+    
+        var node = FindNodeByName(tree, nodeId);
+    
+        if (node.Children.Count > 0)
         {
-            throw NodeNotFoundException.Throw();
+            throw NodeContainsChildrenException.Throw();
+        }
+    
+        await _nodeRepository.DeleteNodeAsync(node);
+    
+        return Ok();
+    }
+
+    private Node FindNodeByName(Node node, int nodeId)
+    {
+        if (node.NodeId == nodeId)
+        {
+            return node;
         }
 
-        await _nodeRepository.DeleteNodeAsync(node);
+        foreach (var child in node.Children)
+        {
+            var result = FindNodeByName(child, nodeId);
+            if (result != null)
+            {
+                return result; // Возвращаем найденный узел
+            }
+        }
 
-        return Ok();
+        return null;
     }
 }

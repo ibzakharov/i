@@ -12,11 +12,5 @@ public class MappingProfile : Profile
             .ForMember(i => i.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(i => i.Children, opt => opt.MapFrom(src => src.Children))
             .ReverseMap();
-
-        CreateMap<TreeDto, Tree>()
-            .ForMember(i => i.TreeId, opt => opt.MapFrom(src => src.TreeId))
-            .ForMember(i => i.TreeName, opt => opt.MapFrom(src => src.TreeName))
-            .ForMember(i => i.Nodes, opt => opt.MapFrom(src => src.Nodes))
-            .ReverseMap();
     }
 }

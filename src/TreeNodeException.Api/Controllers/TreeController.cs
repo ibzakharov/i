@@ -21,17 +21,17 @@ public class TreeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TreeDto>> GetTree([Required] string treeName)
+    public async Task<ActionResult<NodeDto>> GetTree([Required] string treeName)
     {
         var tree = await _treeRepository.GetTreeByNameAsync(treeName);
-
+    
         if (tree == null)
         {
             tree = await _treeRepository.CreateTreeAsync(treeName);
         }
-
-        tree = await _treeRepository.GetTreeChildrenByIdAsync(tree.TreeId);
-
-        return Ok(_mapper.Map<TreeDto>(tree));
+    
+        tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
+    
+        return Ok(_mapper.Map<NodeDto>(tree));
     }
 }

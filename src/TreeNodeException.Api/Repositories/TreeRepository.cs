@@ -12,59 +12,47 @@ public class TreeRepository : ITreeRepository
         _context = context;
     }
 
-    // public async Task<IEnumerable<Node>> GetAllTreesAsync()
-    // {
-    //     return await _context.Nodes
-    //         .Where(t => t.ParentId == null)
-    //         .ToListAsync();
-    // }
-
-    public async Task<Tree> GetTreeChildrenByIdAsync(int id)
+    public async Task<Node> GetTreeByNameAsync(string treeName)
     {
-        var tree = await _context.Trees
-            .Include(t => t.Nodes)
-            .FirstOrDefaultAsync(t => t.TreeId == id);
+        return await _context.Nodes
+            .Where(n => n.ParentId == null && n.Name == treeName)
+            .FirstOrDefaultAsync();
+    }
 
-        foreach (var node in tree.Nodes)
+    public async Task<Node> GetTreeChildrenByNameAsync(string treeName)
+    {
+        var node = await _context.Nodes.Where(n => n.ParentId == null && n.Name == treeName)
+            .Include(t => t.Children)
+            .FirstOrDefaultAsync();
+
+        if (node != null)
         {
-            await NodeHelper.LoadChildrenAsync(node, _context);
+            await LoadChildrenAsync(node);
         }
 
-        return tree;
+        return node;
     }
 
-    public async Task<Tree> GetTreeByIdAsync(int id)
+    public async Task<Node> CreateTreeAsync(string treeName)
     {
-        return await _context.Trees
-            .FirstOrDefaultAsync(t => t.TreeId == id);
-    } 
-    
-    public async Task<Tree> GetTreeByNameAsync(string treeName)
-    {
-        return await _context.Trees
-            .FirstOrDefaultAsync(t => t.TreeName == treeName);
-    }
-
-    public async Task<Tree> CreateTreeAsync(string treeName)
-    {
-        var tree = new Tree()
+        var tree = new Node()
         {
-            TreeName = treeName
+            Name = treeName
         };
-        _context.Trees.Add(tree);
+        _context.Nodes.Add(tree);
         await _context.SaveChangesAsync();
         return tree;
     }
 
-    public async Task UpdateTreeAsync(Tree tree)
+    private async Task LoadChildrenAsync(Node node)
     {
-        _context.Entry(tree).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteTreeAsync(Tree tree)
-    {
-        _context.Trees.Remove(tree);
-        await _context.SaveChangesAsync();
+        if (node.Children.Count > 0)
+        {
+            foreach (var child in node.Children)
+            {
+                await _context.Entry(child).Collection(c => c.Children).LoadAsync();
+                await LoadChildrenAsync(child); // рекурсивная загрузка
+            }
+        }
     }
 }

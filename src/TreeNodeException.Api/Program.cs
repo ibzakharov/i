@@ -55,7 +55,7 @@ public class Program
 
         app.MapControllers();
         
-        app.UseRedirect();
+         // app.UseRedirect();
         app.UseException();
         
         app.Run();

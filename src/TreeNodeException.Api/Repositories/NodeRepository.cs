@@ -12,29 +12,23 @@ public class NodeRepository : INodeRepository
         _context = context;
     }
 
-    public async Task<Node> GetNodeByIdAsync(int id)
+    public async Task<Node> GetNodeByIdAndNameAsync(int id, string nodeName)
     {
         return await _context.Nodes
-            .FirstOrDefaultAsync(n => n.NodeId == id);
+            .FirstOrDefaultAsync(n => n.NodeId == id && n.Name == nodeName);
     }
 
-    public async Task<Node> GetNodeByNameAsync(int treeId, string nodeName)
+    public async Task<Node> GetNodeChildrenByIdAndNameAsync(int id, string nodeName)
+    {
+        return await _context.Nodes.Where(n => n.NodeId == id && n.Name == nodeName)
+            .Include(t => t.Children)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Node> GetNodeByParentIdAndNameAsync(int parentId, string nodeName)
     {
         return await _context.Nodes
-            .FirstOrDefaultAsync(n => n.TreeId == treeId && n.Name == nodeName);
-    }
-
-    public async Task<Node> GetNodeWithChildByIdAsync(int id)
-    {
-        var node = await _context.Nodes
-            .Include(n => n.Children)
-            .FirstOrDefaultAsync(n => n.NodeId == id);
-
-        if (node == null)
-            return null;
-
-        await NodeHelper.LoadChildrenAsync(node, _context);
-        return node;
+            .FirstOrDefaultAsync(n => n.ParentId == parentId && n.Name == nodeName);
     }
 
     public async Task AddNodeAsync(Node node)

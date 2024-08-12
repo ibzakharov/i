@@ -14,8 +14,8 @@ public class TreeNotFoundException : SecureException
     {
     }
 
-    public static TreeNotFoundException Throw()
+    public static TreeNotFoundException Throw(string treeName)
     {
-        throw new TreeNotFoundException("Tree not found");
+        throw new TreeNotFoundException($"Tree with Name = {treeName} was not found");
     }
 }

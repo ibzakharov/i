@@ -14,8 +14,8 @@ public class NodeNotFoundException : SecureException
     {
     }
 
-    public static NodeNotFoundException Throw()
+    public static NodeNotFoundException Throw(int nodeId)
     {
-        throw new NodeNotFoundException("Node not found");
+        throw new NodeNotFoundException($"Node with ID = {nodeId} was not found");
     }
 }
