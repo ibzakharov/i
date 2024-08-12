@@ -19,7 +19,7 @@ public class Program
         builder.Services.AddAutoMapper(typeof(Program));
 
         builder.Services.AddControllers();
-        
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -40,16 +40,14 @@ public class Program
                 Console.WriteLine($"An error occurred applying migrations: {ex.Message}");
             }
         }
+
         Console.WriteLine("Finish apply migrations");
 
         app.UseRedirectToSwagger();
         app.UseException();
-        
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseHttpsRedirection();
 
