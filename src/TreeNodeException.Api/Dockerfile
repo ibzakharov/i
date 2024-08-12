@@ -7,17 +7,17 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["WebApplication1/WebApplication1.csproj", "WebApplication1/"]
-RUN dotnet restore "WebApplication1/WebApplication1.csproj"
+COPY ["TreeNodeException.Api/TreeNodeException.Api.csproj", "TreeNodeException.Api/"]
+RUN dotnet restore "TreeNodeException.Api/TreeNodeException.Api.csproj"
 COPY . .
-WORKDIR "/src/WebApplication1"
-RUN dotnet build "WebApplication1.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/TreeNodeException.Api"
+RUN dotnet build "TreeNodeException.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "WebApplication1.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "TreeNodeException.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WebApplication1.dll"]
+ENTRYPOINT ["dotnet", "TreeNodeException.Api.dll"]

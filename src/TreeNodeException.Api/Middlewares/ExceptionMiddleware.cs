@@ -46,7 +46,11 @@ public class ExceptionMiddleware
 
         var result = exception is SecureException
             ? new { type = "Secure", id = exceptionLog.EventId, data = new { message = exception.Message } }
-            : new { type = "Exception", id = exceptionLog.EventId, data = new { message = $"Internal server error ID = {exceptionLog.EventId}" } };
+            : new
+            {
+                type = "Exception", id = exceptionLog.EventId,
+                data = new { message = $"Internal server error ID = {exceptionLog.EventId}" }
+            };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(result));
     }

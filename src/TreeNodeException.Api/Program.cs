@@ -25,7 +25,26 @@ public class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
+        Console.WriteLine("Start apply migrations");
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+
+            try
+            {
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred applying migrations: {ex.Message}");
+            }
+        }
+        Console.WriteLine("Finish apply migrations");
+
+        app.UseRedirectToSwagger();
+        app.UseException();
+        
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -37,8 +56,6 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
-
-        app.UseException();
 
         app.Run();
     }

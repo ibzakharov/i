@@ -1,0 +1,1 @@
+docker-compose -p "tree-node-exception" up -d
