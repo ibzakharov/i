@@ -33,8 +33,7 @@ public class TreeRepository : ITreeRepository
 
         return nodes;
     }
-
-
+    
     public async Task<Node> GetTreeByIdAsync(int id)
     {
         return await _context.Nodes

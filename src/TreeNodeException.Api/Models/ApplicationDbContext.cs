@@ -22,6 +22,6 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
         
         modelBuilder.Entity<ExceptionLog>()
-            .HasKey(e => e.EventID);
+            .HasKey(e => e.EventId);
     }
 }

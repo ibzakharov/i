@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TreeNodeException.Api.Middlewares;
+using TreeNodeException.Api.Middlewares.Extensions;
 using TreeNodeException.Api.Models;
 using TreeNodeException.Api.Repositories;
 
@@ -16,6 +18,11 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql("Host=desktop;Port=8001;Database=testdb;Username=postgres;Password=postgres"));
 
+// Добавление DbContext в сервисы
+        // builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        //     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        
+        
         // builder.Services.AddScoped<ITreeRepository, TreeRepository>();
         builder.Services.AddScoped<INodeRepository, NodeRepository>();
         builder.Services.AddScoped<ITreeRepository, TreeRepository>();
@@ -36,13 +43,15 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
+        
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
 
         app.MapControllers();
-
+        
+        app.UseExceptionMiddleware();
+        
         app.Run();
     }
 }

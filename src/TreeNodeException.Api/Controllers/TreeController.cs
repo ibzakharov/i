@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using TreeNodeException.Api.Dtos;
+using TreeNodeException.Api.Exceptions;
 using TreeNodeException.Api.Repositories;
 
 namespace TreeNodeException.Api.Controllers;
@@ -39,27 +40,27 @@ public class TreeController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TreeDto>> GetTree(int id)
     {
-        var node = await _treeRepository.GetTreeByIdAsync(id);
+        var tree = await _treeRepository.GetTreeByIdAsync(id);
 
-        if (node == null)
+        if (tree == null)
         {
-            return NotFound();
+            throw TreeNotFoundException.Throw();
         }
 
-        return Ok(_mapper.Map<TreeDto>(node));
+        return Ok(_mapper.Map<TreeDto>(tree));
     }
 
     [HttpGet("{id}/nodes")]
     public async Task<ActionResult<TreeNodesDto>> GetTreeNodes(int id)
     {
-        var node = await _nodeRepository.GetNodeWithChildByIdAsync(id);
+        var tree = await _nodeRepository.GetNodeWithChildByIdAsync(id);
 
-        if (node == null)
+        if (tree == null)
         {
-            return NotFound();
+            throw TreeNotFoundException.Throw();
         }
 
-        return Ok(_mapper.Map<TreeNodesDto>(node));
+        return Ok(_mapper.Map<TreeNodesDto>(tree));
     }
 
     [HttpPost]
@@ -78,7 +79,7 @@ public class TreeController : ControllerBase
 
         if (node == null)
         {
-            return NotFound();
+            throw TreeNotFoundException.Throw();
         }
 
         _mapper.Map(nodeDto, node);
@@ -93,7 +94,7 @@ public class TreeController : ControllerBase
         var node = await _nodeRepository.GetNodeByIdAsync(id);
         if (node == null)
         {
-            return NotFound();
+            throw TreeNotFoundException.Throw();
         }
 
         await _nodeRepository.DeleteNodeAsync(node);

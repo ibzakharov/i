@@ -51,7 +51,7 @@ public class NodesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<NodeDto>> CreateNode(ModifyNodeDto nodeDto)
+    public async Task<ActionResult<NodeDto>> CreateNode(NodeDto nodeDto)
     {
         var node = _mapper.Map<Node>(nodeDto);
         await _nodeRepository.AddNodeAsync(node);
