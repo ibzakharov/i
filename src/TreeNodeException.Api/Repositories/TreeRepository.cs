@@ -12,32 +12,59 @@ public class TreeRepository : ITreeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Node>> GetAllTreesAsync()
-    {
-        return await _context.Nodes
-            .Where(t => t.ParentId == null)
-            .ToListAsync();
-    }
+    // public async Task<IEnumerable<Node>> GetAllTreesAsync()
+    // {
+    //     return await _context.Nodes
+    //         .Where(t => t.ParentId == null)
+    //         .ToListAsync();
+    // }
 
-    public async Task<IEnumerable<Node>> GetAllTreeNodesAsync()
+    public async Task<Tree> GetTreeChildrenByIdAsync(int id)
     {
-        var nodes = await _context.Nodes
-            .Where(t => t.ParentId == null)
-            .Include(n => n.Child)
-            .ToListAsync();
+        var tree = await _context.Trees
+            .Include(t => t.Nodes)
+            .FirstOrDefaultAsync(t => t.TreeId == id);
 
-        foreach (var node in nodes)
+        foreach (var node in tree.Nodes)
         {
             await NodeHelper.LoadChildrenAsync(node, _context);
         }
 
-        return nodes;
+        return tree;
     }
-    
-    public async Task<Node> GetTreeByIdAsync(int id)
+
+    public async Task<Tree> GetTreeByIdAsync(int id)
     {
-        return await _context.Nodes
-            .Where(t => t.ParentId == null)
-            .FirstOrDefaultAsync(t => t.NodeId == id);
+        return await _context.Trees
+            .FirstOrDefaultAsync(t => t.TreeId == id);
+    } 
+    
+    public async Task<Tree> GetTreeByNameAsync(string treeName)
+    {
+        return await _context.Trees
+            .FirstOrDefaultAsync(t => t.TreeName == treeName);
+    }
+
+    public async Task<Tree> CreateTreeAsync(string treeName)
+    {
+        var tree = new Tree()
+        {
+            TreeName = treeName
+        };
+        _context.Trees.Add(tree);
+        await _context.SaveChangesAsync();
+        return tree;
+    }
+
+    public async Task UpdateTreeAsync(Tree tree)
+    {
+        _context.Entry(tree).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteTreeAsync(Tree tree)
+    {
+        _context.Trees.Remove(tree);
+        await _context.SaveChangesAsync();
     }
 }

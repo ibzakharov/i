@@ -36,7 +36,7 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
-
+        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -50,7 +50,8 @@ public class Program
 
         app.MapControllers();
         
-        app.UseExceptionMiddleware();
+        app.UseRedirect();
+        app.UseException();
         
         app.Run();
     }

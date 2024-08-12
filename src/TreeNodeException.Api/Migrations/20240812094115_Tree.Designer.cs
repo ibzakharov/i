@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TreeNodeException.Api.Models;
@@ -11,9 +12,11 @@ using TreeNodeException.Api.Models;
 namespace TreeNodeException.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240812094115_Tree")]
+    partial class Tree
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,6 +33,11 @@ namespace TreeNodeException.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NodeId"));
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -37,33 +45,20 @@ namespace TreeNodeException.Api.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TreeId")
+                    b.Property<int>("TreeNodeId")
                         .HasColumnType("integer");
 
                     b.HasKey("NodeId");
 
                     b.HasIndex("ParentId");
 
-                    b.HasIndex("TreeId");
+                    b.HasIndex("TreeNodeId");
 
                     b.ToTable("Nodes");
-                });
 
-            modelBuilder.Entity("Tree", b =>
-                {
-                    b.Property<int>("TreeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.HasDiscriminator().HasValue("Node");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TreeId"));
-
-                    b.Property<string>("TreeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("TreeId");
-
-                    b.ToTable("Trees");
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("TreeNodeException.Api.Models.ExceptionLog", b =>
@@ -102,16 +97,30 @@ namespace TreeNodeException.Api.Migrations
                     b.ToTable("ExceptionLogs");
                 });
 
+            modelBuilder.Entity("Tree", b =>
+                {
+                    b.HasBaseType("Node");
+
+                    b.Property<int>("TreeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TreeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("Tree");
+                });
+
             modelBuilder.Entity("Node", b =>
                 {
                     b.HasOne("Node", "Parent")
-                        .WithMany("Children")
+                        .WithMany("Child")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tree", "Tree")
                         .WithMany("Nodes")
-                        .HasForeignKey("TreeId")
+                        .HasForeignKey("TreeNodeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -122,7 +131,7 @@ namespace TreeNodeException.Api.Migrations
 
             modelBuilder.Entity("Node", b =>
                 {
-                    b.Navigation("Children");
+                    b.Navigation("Child");
                 });
 
             modelBuilder.Entity("Tree", b =>

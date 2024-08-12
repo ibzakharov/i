@@ -7,29 +7,16 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<ModifyNodeDto, Node>()
-            .ReverseMap();
-        
         CreateMap<Node, NodeDto>()
-            .ReverseMap();
-        
-        CreateMap<Node, NodeChildDto>()
-            .ForMember(dest => dest.Child, opt => opt.MapFrom(src => src.Child))
-            .ReverseMap();
-
-        CreateMap<TreeDto, Node>()
-            .ForMember(i => i.NodeId, opt => opt.MapFrom(src => src.TreeId))
-            .ForMember(i => i.Name, opt => opt.MapFrom(src => src.TreeName))
-            .ReverseMap();
-        
-        CreateMap<TreeNodesDto, Node>()
-            .ForMember(i => i.NodeId, opt => opt.MapFrom(src => src.TreeId))
-            .ForMember(i => i.Name, opt => opt.MapFrom(src => src.TreeName))
-            .ForMember(i => i.Child, opt => opt.MapFrom(src => src.Nodes))
+            .ForMember(i => i.NodeId, opt => opt.MapFrom(src => src.NodeId))
+            .ForMember(i => i.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(i => i.Children, opt => opt.MapFrom(src => src.Children))
             .ReverseMap();
 
-        CreateMap<ModifyTreeDto, Node>()
-            .ForMember(i => i.Name, opt => opt.MapFrom(src => src.TreeName))
+        CreateMap<TreeDto, Tree>()
+            .ForMember(i => i.TreeId, opt => opt.MapFrom(src => src.TreeId))
+            .ForMember(i => i.TreeName, opt => opt.MapFrom(src => src.TreeName))
+            .ForMember(i => i.Nodes, opt => opt.MapFrom(src => src.Nodes))
             .ReverseMap();
     }
 }

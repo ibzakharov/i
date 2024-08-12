@@ -18,10 +18,16 @@ public class NodeRepository : INodeRepository
             .FirstOrDefaultAsync(n => n.NodeId == id);
     }
 
+    public async Task<Node> GetNodeByNameAsync(int treeId, string nodeName)
+    {
+        return await _context.Nodes
+            .FirstOrDefaultAsync(n => n.TreeId == treeId && n.Name == nodeName);
+    }
+
     public async Task<Node> GetNodeWithChildByIdAsync(int id)
     {
         var node = await _context.Nodes
-            .Include(n => n.Child)
+            .Include(n => n.Children)
             .FirstOrDefaultAsync(n => n.NodeId == id);
 
         if (node == null)

@@ -1,6 +1,6 @@
-﻿namespace TreeNodeException.Dtos;
+﻿namespace TreeNodeException.Api.Dtos;
 
-public record ExceptionLogDTO(
+public record ExceptionLogDto(
     int EventID,
     DateTime Timestamp,
     string RequestParameters,

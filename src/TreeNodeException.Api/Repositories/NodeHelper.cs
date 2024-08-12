@@ -6,11 +6,11 @@ public static class NodeHelper
 {
     public static async Task LoadChildrenAsync(Node node, ApplicationDbContext context)
     {
-        if (node.Child != null && node.Child.Count > 0)
+        if (node.Children != null && node.Children.Count > 0)
         {
-            foreach (var child in node.Child)
+            foreach (var child in node.Children)
             {
-                await context.Entry(child).Collection(c => c.Child).LoadAsync();
+                await context.Entry(child).Collection(c => c.Children).LoadAsync();
                 await LoadChildrenAsync(child, context); // рекурсивная загрузка
             }
         }
