@@ -23,7 +23,6 @@ public class Program
         //     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
         
         
-        // builder.Services.AddScoped<ITreeRepository, TreeRepository>();
         builder.Services.AddScoped<INodeRepository, NodeRepository>();
         builder.Services.AddScoped<ITreeRepository, TreeRepository>();
         builder.Services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
@@ -31,9 +30,15 @@ public class Program
         builder.Services.AddAutoMapper(typeof(Program));
 
         builder.Services.AddControllers();
+        
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath);
+        });
 
         var app = builder.Build();
         
