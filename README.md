@@ -1,1 +1,1 @@
-# i
+Run script run.ps1 in PowerShell, after executing the script, open http://localhost:5000 in the browser
