@@ -18,10 +18,10 @@ public class NodeController : ControllerBase
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<NodeDto>> CreateNode(
-        [Required] string treeName,
-        [Required] int parentNodeId,
-        [Required] string nodeName)
+    public async Task<IActionResult> CreateNode(
+        [FromQuery, Required] string treeName,
+        [FromQuery, Required] int parentNodeId,
+        [FromQuery, Required] string nodeName)
     {
         var parentNode = await _nodeRepository.GetNodeByIdAndNameAsync(parentNodeId, treeName);
 
@@ -49,56 +49,54 @@ public class NodeController : ControllerBase
 
     [HttpPost("rename")]
     public async Task<IActionResult> RenameNode(
-        [Required] string treeName,
-        [Required] int nodeId,
-        [Required] string newNodeName)
+        [FromQuery, Required] string treeName,
+        [FromQuery, Required] int nodeId,
+        [FromQuery, Required] string newNodeName)
     {
-        var tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
-    
-        if (tree == null)
-        {
-            throw TreeNotFoundException.Throw(treeName);
-        }
-    
-        var node = FindNodeByName(tree, nodeId);
-    
+        var node = await FindNodeAsync(treeName, nodeId);
+
         if (node == null)
         {
             throw NodeNotFoundException.Throw(nodeId);
         }
-    
+
         node.Name = newNodeName;
-    
+
         await _nodeRepository.UpdateNodeAsync(node);
-    
+
         return Ok();
     }
 
     [HttpPost("delete")]
     public async Task<IActionResult> DeleteNode(
-        [Required] string treeName,
-        [Required] int nodeId)
+        [FromQuery, Required] string treeName,
+        [FromQuery, Required] int nodeId)
     {
-        var tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
-    
-        if (tree == null)
-        {
-            throw TreeNotFoundException.Throw(treeName);
-        }
-    
-        var node = FindNodeByName(tree, nodeId);
-    
+        var node = await FindNodeAsync(treeName, nodeId);
+
         if (node.Children.Count > 0)
         {
             throw NodeContainsChildrenException.Throw();
         }
-    
+
         await _nodeRepository.DeleteNodeAsync(node);
-    
+
         return Ok();
     }
 
-    private Node FindNodeByName(Node node, int nodeId)
+    private async Task<Node> FindNodeAsync(string treeName, int nodeId)
+    {
+        var tree = await _treeRepository.GetTreeChildrenByNameAsync(treeName);
+
+        if (tree == null)
+        {
+            throw TreeNotFoundException.Throw(treeName);
+        }
+
+        return FindNodeById(tree, nodeId);
+    }
+
+    private Node FindNodeById(Node node, int nodeId)
     {
         if (node.NodeId == nodeId)
         {
@@ -107,10 +105,10 @@ public class NodeController : ControllerBase
 
         foreach (var child in node.Children)
         {
-            var result = FindNodeByName(child, nodeId);
+            var result = FindNodeById(child, nodeId);
             if (result != null)
             {
-                return result; // Возвращаем найденный узел
+                return result;
             }
         }
 

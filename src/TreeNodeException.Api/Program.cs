@@ -24,8 +24,7 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
-
-        Console.WriteLine("Start apply migrations");
+        
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
@@ -40,8 +39,6 @@ public class Program
                 Console.WriteLine($"An error occurred applying migrations: {ex.Message}");
             }
         }
-
-        Console.WriteLine("Finish apply migrations");
 
         app.UseRedirectToSwagger();
         app.UseException();

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Mime;
+using System.Text.Json;
 using TreeNodeException.Api.Exceptions;
 using TreeNodeException.Api.Models;
 
@@ -41,7 +42,7 @@ public class ExceptionMiddleware
         dbContext.ExceptionLogs.Add(exceptionLog);
         await dbContext.SaveChangesAsync();
 
-        context.Response.ContentType = "application/json";
+        context.Response.ContentType = MediaTypeNames.Application.Json;
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
         var result = exception is SecureException

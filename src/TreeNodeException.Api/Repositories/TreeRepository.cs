@@ -51,7 +51,7 @@ public class TreeRepository : ITreeRepository
             foreach (var child in node.Children)
             {
                 await _context.Entry(child).Collection(c => c.Children).LoadAsync();
-                await LoadChildrenAsync(child); // рекурсивная загрузка
+                await LoadChildrenAsync(child);
             }
         }
     }
